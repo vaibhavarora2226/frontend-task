@@ -2,8 +2,30 @@ import React, { useState, useEffect } from "react";
 import { TextField, Grid, Button, Tooltip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { io } from "socket.io-client";
 
 function LoginComponent() {
+  const [socket, setSocket] = useState(null);
+
+  useEffect(() => {
+    setSocket(io("http://localhost:8000"));
+  }, []);
+
+  const socketConnection = socket?.on("connect", () => {
+    console.log("socket.id");
+  });
+
+  const notificationSocket = socketConnection?.on("notification", (payload) => {
+    console.log("hi", payload);
+    Notification.requestPermission().then((perm) => {
+      if (perm === "granted") {
+        new Notification("Example notification", {
+          body: "This is more text",
+        });
+      }
+    });
+  });
+
   const navigate = useNavigate();
   const [loginDetails, setLoginDetails] = useState({
     username: null,
