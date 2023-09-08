@@ -26,7 +26,6 @@ function SignUpComponent() {
         <TextField
           style={{ width: "400px" }}
           variant="outlined"
-          color="secondary"
           value={signUpDetails.email}
           label={"email"}
           onChange={(e) => {
@@ -41,7 +40,6 @@ function SignUpComponent() {
         <TextField
           style={{ width: "400px" }}
           variant="outlined"
-          color="secondary"
           value={signUpDetails.phonenumber}
           label={"number"}
           onChange={(e) => {
@@ -56,7 +54,6 @@ function SignUpComponent() {
         <TextField
           style={{ width: "400px" }}
           variant="outlined"
-          color="secondary"
           value={signUpDetails.username}
           label={"username"}
           onChange={(e) => {
@@ -71,7 +68,6 @@ function SignUpComponent() {
         <TextField
           style={{ width: "400px" }}
           variant="outlined"
-          color="secondary"
           value={signUpDetails.password}
           label={"password"}
           onChange={(e) => {
@@ -93,7 +89,6 @@ function SignUpComponent() {
         >
           <span>
             <Button
-              color="secondary"
               variant="outlined"
               disabled={!signUpDetails.username && !signUpDetails.password}
               onClick={() => {
@@ -103,7 +98,9 @@ function SignUpComponent() {
                   })
                   .then((res) => {
                     console.log(res);
-                    navigate("/main");
+                    const { token } = res.data;
+                    localStorage.setItem("jwtToken", token);
+                    navigate("/home");
                   })
                   .catch((err) => {
                     console.log(err);
@@ -117,7 +114,7 @@ function SignUpComponent() {
       </Grid>
       <Grid>
         <Button
-          color="secondary"
+          style={{ color: "black" }}
           variant="text"
           onClick={() => {
             navigate("/");

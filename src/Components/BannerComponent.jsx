@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { TextField, Grid, Button, Tooltip } from "@mui/material";
-import banner from "./Businessman-amico.png";
+import banner from "../media/hero_illustration.png";
 function BannerComponent() {
   return (
     <Grid
@@ -13,7 +13,7 @@ function BannerComponent() {
       <Grid
         item
         xs={4}
-        style={{ backgroundColor: "#fadeff", height: "100%" }}
+        style={{ backgroundColor: "#cee1fc", height: "100%" }}
       ></Grid>
       <Grid
         item
@@ -22,7 +22,7 @@ function BannerComponent() {
           background: `url(${banner})`,
           height: "110%",
           backgroundRepeat: "round",
-          backgroundColor: "#fadeff",
+          backgroundColor: "#cee1fc",
         }}
       ></Grid>
     </Grid>

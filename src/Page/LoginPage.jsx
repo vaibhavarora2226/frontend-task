@@ -1,6 +1,6 @@
-import LoginComponent from "./LoginComponent";
-import "./App.css";
-import BannerComponent from "./BannerComponent";
+import LoginComponent from "../Components/LoginComponent";
+import "../App.css";
+import BannerComponent from "../Components/BannerComponent";
 import { Grid, Box } from "@mui/material";
 function LoginPage() {
   return (
@@ -14,6 +14,7 @@ function LoginPage() {
           width: "100%",
           display: "flex",
           justifyContent: "center",
+          backgroundColor: "#ffffff",
         }}
       >
         <LoginComponent />

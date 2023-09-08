@@ -5,27 +5,6 @@ import axios from "axios";
 import { io } from "socket.io-client";
 
 function LoginComponent() {
-  const [socket, setSocket] = useState(null);
-
-  useEffect(() => {
-    setSocket(io("http://localhost:8000"));
-  }, []);
-
-  const socketConnection = socket?.on("connect", () => {
-    console.log("socket.id");
-  });
-
-  const notificationSocket = socketConnection?.on("notification", (payload) => {
-    console.log("hi", payload);
-    Notification.requestPermission().then((perm) => {
-      if (perm === "granted") {
-        new Notification("Example notification", {
-          body: "This is more text",
-        });
-      }
-    });
-  });
-
   const navigate = useNavigate();
   const [loginDetails, setLoginDetails] = useState({
     username: null,
@@ -45,9 +24,8 @@ function LoginComponent() {
       </Grid>
       <Grid my={1}>
         <TextField
-          style={{ width: "400px" }}
+          style={{ width: "400px", color: "black" }}
           variant="outlined"
-          color="secondary"
           value={loginDetails.username}
           label={"username"}
           onChange={(e) => {
@@ -60,9 +38,8 @@ function LoginComponent() {
       </Grid>
       <Grid my={1}>
         <TextField
-          style={{ width: "400px" }}
+          style={{ width: "400px", color: "black" }}
           variant="outlined"
-          color="secondary"
           value={loginDetails.password}
           label={"password"}
           onChange={(e) => {
@@ -85,7 +62,6 @@ function LoginComponent() {
           <span>
             <Button
               variant="outlined"
-              color="secondary"
               disabled={!loginDetails.username && !loginDetails.password}
               onClick={() => {
                 axios
@@ -94,8 +70,9 @@ function LoginComponent() {
                   })
                   .then((res) => {
                     console.log(res);
-
-                    navigate("/main");
+                    const { token } = res.data;
+                    localStorage.setItem("jwtToken", token);
+                    navigate("/home");
                   })
                   .catch((err) => {
                     console.log(err);
@@ -109,7 +86,8 @@ function LoginComponent() {
       </Grid>
       <Grid>
         <Button
-          color="secondary"
+          style={{ color: "black" }}
+          // color={{"#E6F0FF"}}
           variant="text"
           onClick={() => {
             navigate("/signup");
