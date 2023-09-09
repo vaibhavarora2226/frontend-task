@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { TextField, Grid, Button, Tooltip } from "@mui/material";
+import { TextField, Grid, Button, Tooltip, Snackbar, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { CircularProgress } from "@mui/material";
 function SignUpComponent() {
   const navigate = useNavigate();
   const [signUpDetails, setSignUpDetails] = useState({
@@ -10,6 +11,12 @@ function SignUpComponent() {
     phonenumber: null,
     password: null,
   });
+  const [snack, setSnack] = useState({
+    message: null,
+    severity: null,
+    open: false,
+  });
+  const [loader, setLoder] = useState(false);
   return (
     <Grid
       style={{
@@ -24,7 +31,7 @@ function SignUpComponent() {
       </Grid>
       <Grid my={1}>
         <TextField
-          style={{ width: "400px" }}
+          style={{ width: "300px" }}
           variant="outlined"
           value={signUpDetails.email}
           label={"email"}
@@ -38,7 +45,7 @@ function SignUpComponent() {
       </Grid>
       <Grid my={1}>
         <TextField
-          style={{ width: "400px" }}
+          style={{ width: "300px" }}
           variant="outlined"
           value={signUpDetails.phonenumber}
           label={"number"}
@@ -52,7 +59,7 @@ function SignUpComponent() {
       </Grid>
       <Grid my={1}>
         <TextField
-          style={{ width: "400px" }}
+          style={{ width: "300px" }}
           variant="outlined"
           value={signUpDetails.username}
           label={"username"}
@@ -66,7 +73,7 @@ function SignUpComponent() {
       </Grid>
       <Grid my={1}>
         <TextField
-          style={{ width: "400px" }}
+          style={{ width: "300px" }}
           variant="outlined"
           value={signUpDetails.password}
           label={"password"}
@@ -88,27 +95,48 @@ function SignUpComponent() {
           }
         >
           <span>
-            <Button
-              variant="outlined"
-              disabled={!signUpDetails.username && !signUpDetails.password}
-              onClick={() => {
-                axios
-                  .post("http://localhost:5000/signup", {
-                    ...signUpDetails,
-                  })
-                  .then((res) => {
-                    console.log(res);
-                    const { token } = res.data;
-                    localStorage.setItem("jwtToken", token);
-                    navigate("/home");
-                  })
-                  .catch((err) => {
-                    console.log(err);
-                  });
-              }}
-            >
-              Sign Up
-            </Button>
+            {loader ? (
+              <Box sx={{ display: "flex" }}>
+                <CircularProgress size={32} />
+              </Box>
+            ) : (
+              <Button
+                variant="outlined"
+                disabled={!signUpDetails.username && !signUpDetails.password}
+                onClick={() => {
+                  setLoder(true);
+                  axios
+                    .post("http://localhost:5000/signup", {
+                      ...signUpDetails,
+                    })
+                    .then((res) => {
+                      setLoder(false);
+                      setSnack({
+                        severity: "success",
+                        message: "Signup successfully",
+                        open: true,
+                      });
+                      console.log(res);
+                      const { token } = res.data;
+                      localStorage.setItem("jwtToken", token);
+                      navigate("/home");
+                    })
+                    .catch((err) => {
+                      setLoder(false);
+                      setSnack({
+                        severity: "error",
+                        message:
+                          err?.response?.data?.message ||
+                          "Something went wrong",
+                        open: true,
+                      });
+                      console.log(err);
+                    });
+                }}
+              >
+                Sign Up
+              </Button>
+            )}
           </span>
         </Tooltip>
       </Grid>
@@ -123,6 +151,35 @@ function SignUpComponent() {
           Login
         </Button>
       </Grid>
+      <Box sx={{ width: 500 }}>
+        <Snackbar
+          open={snack.open}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          autoHideDuration={6000}
+          onClose={() => {
+            setSnack({
+              open: false,
+              message: null,
+              severityL: null,
+            });
+          }}
+        >
+          <Button
+            onClick={() => {
+              setSnack({
+                open: false,
+                message: null,
+                severityL: null,
+              });
+            }}
+            variant="contained"
+            color={snack.severity}
+            sx={{ width: "100%" }}
+          >
+            {snack.message}
+          </Button>
+        </Snackbar>
+      </Box>
     </Grid>
   );
 }

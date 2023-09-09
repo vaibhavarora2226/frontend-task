@@ -13,8 +13,10 @@ import DialogActions from "@mui/material/DialogActions";
 import Dialog from "@mui/material/Dialog";
 import { Container } from "@mui/system";
 import CustomButton from "./CustomButton";
-import { TextField, Grid, Button, Tooltip } from "@mui/material";
+import { TextField, Grid, Button, Tooltip, Snackbar } from "@mui/material";
 import axios from "axios";
+import { CircularProgress } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 import {
   Drawer,
@@ -26,9 +28,9 @@ import {
   styled,
 } from "@mui/material";
 import { useState } from "react";
-import { LinkOffTwoTone } from "@mui/icons-material";
 
 export const Navbar = () => {
+  const navigate = useNavigate();
   const [mobileMenu, setMobileMenu] = useState({
     left: false,
   });
@@ -36,10 +38,16 @@ export const Navbar = () => {
   const [Details, setDetails] = useState({
     username: null,
     email: null,
-    phonenumber: null,
     password: null,
+    newPassword: null,
   });
-
+  const [snack, setSnack] = useState({
+    message: null,
+    severity: null,
+    open: false,
+  });
+  const [loader, setLoder] = useState(false);
+  const [logoutLoader, setLogoutLoader] = useState(false);
   const toggleDrawer = (anchor, open) => (event) => {
     if (
       event.type === "keydown" &&
@@ -119,64 +127,98 @@ export const Navbar = () => {
   }));
 
   return (
-    <NavbarContainer>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "2.5rem",
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <CustomMenuIcon onClick={toggleDrawer("left", true)} />
-          <Drawer
-            anchor="left"
-            open={mobileMenu["left"]}
-            onClose={toggleDrawer("left", false)}
-          >
-            {list("left")}
-          </Drawer>
+    <>
+      <NavbarContainer>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "2.5rem",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <CustomMenuIcon onClick={toggleDrawer("left", true)} />
+            <Drawer
+              anchor="left"
+              open={mobileMenu["left"]}
+              onClose={toggleDrawer("left", false)}
+            >
+              {list("left")}
+            </Drawer>
+          </Box>
+
+          <NavbarLinksBox>
+            <NavLink variant="body2">Home</NavLink>
+            <NavLink variant="body2">Features</NavLink>
+            <NavLink variant="body2">Services</NavLink>
+            <NavLink variant="body2">Listed</NavLink>
+            <NavLink variant="body2">Contact</NavLink>
+          </NavbarLinksBox>
         </Box>
 
-        <NavbarLinksBox>
-          <NavLink variant="body2">Home</NavLink>
-          <NavLink variant="body2">Features</NavLink>
-          <NavLink variant="body2">Services</NavLink>
-          <NavLink variant="body2">Listed</NavLink>
-          <NavLink variant="body2">Contact</NavLink>
-        </NavbarLinksBox>
-      </Box>
-
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "1rem",
-        }}
-      >
-        <NavLink
-          onClick={() => {
-            setOpen(true);
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "1rem",
           }}
-          variant="body2"
         >
-          Reset Password
-        </NavLink>
-        <CustomButton
-          backgroundColor="#0F1B4C"
-          color="#fff"
-          buttonText="LogOut"
-        />
-      </Box>
+          <Button
+            variant="text"
+            onClick={() => {
+              setOpen(true);
+            }}
+          >
+            Reset Password
+          </Button>
+          {logoutLoader ? (
+            <Box sx={{ display: "flex" }}>
+              <CircularProgress size={32} />
+            </Box>
+          ) : (
+            <CustomButton
+              backgroundColor="#0F1B4C"
+              color="#fff"
+              buttonText="LogOut"
+              click={() => {
+                setLogoutLoader(true);
+                axios
+                  .post("http://localhost:5000/logout", {
+                    token: localStorage.getItem("jwtToken"),
+                  })
+                  .then((res) => {
+                    setSnack({
+                      severity: "success",
+                      message: "Logout successfully",
+                      open: true,
+                    });
+                    console.log(res);
+                    setLogoutLoader(false);
+                    localStorage.removeItem("jwtToken");
+                    navigate("/");
+                  })
+                  .catch((err) => {
+                    setLogoutLoader(false);
 
+                    setSnack({
+                      severity: "error",
+                      message:
+                        err?.response?.data?.message || "Something went wrong",
+                      open: true,
+                    });
+                    setLoder(false);
+                    console.log(err);
+                  });
+              }}
+            />
+          )}
+        </Box>
+      </NavbarContainer>
       <Dialog
-        sx={{ "& .MuiDialog-paper": { width: "80%", maxHeight: 435 } }}
+        // sx={{ "& .MuiDialog-paper": { width: "80%", maxHeight: 435 } }}
         maxWidth="xs"
-        onClose={() => {
-          setOpen(false);
-        }}
         open={open}
       >
         <DialogTitle>Reset Password</DialogTitle>
@@ -192,11 +234,12 @@ export const Navbar = () => {
           >
             <Grid my={1}>
               <TextField
-                style={{ width: "400px" }}
+                style={{ maxWidth: "400px", minWidth: "250px" }}
                 variant="outlined"
                 value={Details.email}
                 label={"email"}
                 onChange={(e) => {
+                  console.log(e.target.value);
                   setDetails({
                     ...Details,
                     email: e.target.value,
@@ -204,23 +247,10 @@ export const Navbar = () => {
                 }}
               />
             </Grid>
+
             <Grid my={1}>
               <TextField
-                style={{ width: "400px" }}
-                variant="outlined"
-                value={Details.phonenumber}
-                label={"number"}
-                onChange={(e) => {
-                  setDetails({
-                    ...Details,
-                    phonenumber: e.target.value,
-                  });
-                }}
-              />
-            </Grid>
-            <Grid my={1}>
-              <TextField
-                style={{ width: "400px" }}
+                style={{ maxWidth: "400px", minWidth: "250px" }}
                 variant="outlined"
                 value={Details.username}
                 label={"username"}
@@ -234,7 +264,7 @@ export const Navbar = () => {
             </Grid>
             <Grid my={1}>
               <TextField
-                style={{ width: "400px" }}
+                style={{ maxWidth: "400px", minWidth: "250px" }}
                 variant="outlined"
                 value={Details.password}
                 label={"password"}
@@ -246,30 +276,103 @@ export const Navbar = () => {
                 }}
               />
             </Grid>
+            <Grid my={1}>
+              <TextField
+                style={{ maxWidth: "400px", minWidth: "250px" }}
+                variant="outlined"
+                value={Details.newPassword}
+                label={"New Password"}
+                onChange={(e) => {
+                  setDetails({
+                    ...Details,
+                    newPassword: e.target.value,
+                  });
+                }}
+              />
+            </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button
-            autoFocus
-            onClick={() => {
-              axios
-                .post("http://localhost:5000/reset-password", {
-                  ...Details,
-                })
-                .then((res) => {
-                  console.log(res);
+          {loader ? (
+            <Box sx={{ display: "flex" }}>
+              <CircularProgress size={32} />
+            </Box>
+          ) : (
+            <>
+              <Button
+                onClick={() => {
+                  setLoder(true);
+                  axios
+                    .post("http://localhost:5000/reset-password", {
+                      ...Details,
+                    })
+                    .then((res) => {
+                      console.log(res);
+                      setSnack({
+                        severity: "success",
+                        message: "password reset successfully",
+                        open: true,
+                      });
+
+                      setLoder(false);
+                    })
+                    .catch((err) => {
+                      console.log(err);
+                      setSnack({
+                        severity: "error",
+                        message:
+                          err?.response?.data?.message ||
+                          "Something went wrong",
+                        open: true,
+                      });
+                      setLoder(false);
+                      console.log(err);
+                    });
+                }}
+              >
+                Done
+              </Button>
+              <Button
+                onClick={() => {
                   setOpen(false);
-                })
-                .catch((err) => {
-                  console.log(err);
-                });
-            }}
-          >
-            Done
-          </Button>
+                }}
+              >
+                Cancel
+              </Button>
+            </>
+          )}
         </DialogActions>
       </Dialog>
-    </NavbarContainer>
+      <Box sx={{ width: 500 }}>
+        <Snackbar
+          open={snack.open}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          autoHideDuration={6000}
+          onClose={() => {
+            setSnack({
+              open: false,
+              message: null,
+              severityL: null,
+            });
+          }}
+        >
+          <Button
+            onClick={() => {
+              setSnack({
+                open: false,
+                message: null,
+                severityL: null,
+              });
+            }}
+            variant="contained"
+            color={snack.severity}
+            sx={{ width: "100%" }}
+          >
+            {snack.message}
+          </Button>
+        </Snackbar>
+      </Box>
+    </>
   );
 };
 
